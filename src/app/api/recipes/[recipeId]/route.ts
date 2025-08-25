@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from "next-auth";
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { RecipeIngredient } from '@prisma/client';
 
 export async function PUT(
   request: Request,
@@ -30,7 +31,7 @@ export async function PUT(
         where: { recipeId: recipeId },
       });
 
-      const ingredientsToCreate = ingredients.map((ing: any) => ({
+      const ingredientsToCreate = ingredients.map((ing: RecipeIngredient) => ({
         quantity: ing.quantity,
         productId: ing.productId,
         recipeId: recipeId,

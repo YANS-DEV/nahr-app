@@ -61,9 +61,9 @@ export const authOptions: NextAuthOptions = {
         },
         async session({ session, token }) {
             if (token) {
-                (session.user as any).id = token.id;
-                (session.user as any).role = token.role;
-                (session.user as any).restaurantId = token.restaurantId;
+                session.user.id = token.id;
+                session.user.role = token.role;
+                session.user.restaurantId = token.restaurantId;
             }
             return session;
         },
