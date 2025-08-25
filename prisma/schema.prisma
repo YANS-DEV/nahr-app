@@ -1,0 +1,151 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Restaurant {
+  id               String           @id @default(cuid())
+  name             String           @unique
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  users            User[]
+  recipes          Recipe[]
+  receptionLogs    ReceptionLog[]
+  stock            Stock[]
+  products         Product[]
+  categories       Category[]
+  batches          Batch[]
+  inventories      Inventory[]
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  password     String
+  role         String   @default("staff")
+  restaurantId String?
+  restaurant   Restaurant? @relation(fields: [restaurantId], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  batches      Batch[]
+}
+
+model Product {
+  id               String                 @id @default(uuid())
+  name             String
+  unitOfMeasure    String
+  restaurantId     String?
+  restaurant       Restaurant?            @relation(fields: [restaurantId], references: [id])
+  categoryId       String?
+  category         Category?              @relation(fields: [categoryId], references: [id])
+  createdAt        DateTime               @default(now())
+  updatedAt        DateTime               @updatedAt
+  packagingOptions ProductPackaging[]
+  recipeIngredients RecipeIngredient[]
+  stock        Stock[]
+
+  @@unique([name, restaurantId])
+}
+
+model Category {
+  id           String      @id @default(uuid())
+  name         String
+  type         String      
+  restaurantId String?
+  restaurant   Restaurant? @relation(fields: [restaurantId], references: [id])
+  products     Product[]
+  color        String?
+
+  @@unique([name, restaurantId, type])
+}
+
+model Stock {
+  id            String   @id @default(cuid())
+  productId     String   @unique
+  product       Product  @relation(fields: [productId], references: [id])
+  quantity      Float    @default(0)
+  alertThreshold Float   @default(0)
+  restaurantId  String
+  restaurant    Restaurant @relation(fields: [restaurantId], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Inventory {
+  id            String   @id @default(cuid())
+  restaurantId  String
+  restaurant    Restaurant @relation(fields: [restaurantId], references: [id])
+  receptionLogs ReceptionLog[]
+  createdAt     DateTime @default(now())
+}
+
+model ProductPackaging {
+  id               String   @id @default(cuid())
+  name             String
+  ean              String   @unique
+  quantity         Float
+  productId        String
+  product          Product  @relation(fields: [productId], references: [id])
+  receptionLogs    ReceptionLog[]
+}
+
+model ReceptionLog {
+  id               String   @id @default(cuid())
+  productPackagingId String
+  productPackaging ProductPackaging @relation(fields: [productPackagingId], references: [id])
+  quantityReceived Int
+  restaurantId     String
+  restaurant       Restaurant @relation(fields: [restaurantId], references: [id])
+  inventoryId      String?
+  inventory        Inventory? @relation(fields: [inventoryId], references: [id])
+  createdAt        DateTime @default(now())
+}
+
+model Recipe {
+  id           String            @id @default(cuid())
+  name         String
+  description  String?
+  restaurantId String
+  restaurant   Restaurant        @relation(fields: [restaurantId], references: [id])
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  ingredients  RecipeIngredient[]
+  batchItems   BatchItem[] 
+}
+
+model RecipeIngredient {
+  id        String @id @default(cuid())
+  recipeId  String
+  recipe    Recipe @relation(fields: [recipeId], references: [id])
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([recipeId, productId])
+}
+
+model Batch {
+  id           String      @id @default(uuid())
+  createdAt    DateTime    @default(now())
+  user         User        @relation(fields: [userId], references: [id])
+  userId       String
+  restaurant   Restaurant  @relation(fields: [restaurantId], references: [id])
+  restaurantId String
+  batchItems   BatchItem[]
+}
+
+model BatchItem {
+  id        String @id @default(uuid())
+  batchId   String
+  batch     Batch  @relation(fields: [batchId], references: [id])
+  recipeId  String
+  recipe    Recipe @relation(fields: [recipeId], references: [id])
+  quantity  Int
+}
