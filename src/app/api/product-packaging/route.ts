@@ -29,7 +29,7 @@ export async function GET(req: Request) {
 
     return NextResponse.json(productPackaging);
   } catch (error) {
-    console.error('Error fetching product packaging:', error);
-    return new NextResponse(JSON.stringify({ error: 'Internal Server Error' }), { status: 500 });
+      console.error('Error fetching product packaging:', error);
+      return new NextResponse(JSON.stringify({ error: 'Internal Server Error' }), { status: 500 });
   }
 }
